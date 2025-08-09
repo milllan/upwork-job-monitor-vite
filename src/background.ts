@@ -4,7 +4,15 @@ import { fetchJobs, fetchJobDetails } from './api';
 import { Job } from './types';
 import { config } from './config';
 
-
+// --- Helper to safely send a message to the popup ---
+async function notifyPopup() {
+    try {
+        await browser.runtime.sendMessage({ action: 'updatePopup' });
+    } catch (error) {
+        // This error is expected if the popup is not open. We can safely ignore it.
+        // console.log("Could not send message to popup, probably closed.");
+    }
+}
 
 function applyFilters(jobs: Job[]): Job[] {
   return jobs.map(job => {
@@ -22,7 +30,9 @@ function applyFilters(jobs: Job[]): Job[] {
 async function runJobCheck() {
   console.log('Running job check...');
   await storage.setStatus('Checking...');
-  browser.runtime.sendMessage({ action: 'updatePopup' }); // Notify popup we've started
+  
+  //browser.runtime.sendMessage({ action: 'updatePopup' }); // Notify popup we've started
+  await notifyPopup(); // Notify popup we've started
   try {
     const [userQuery, seenJobs, deletedJobs] = await Promise.all([
         storage.getUserQuery(),
@@ -63,7 +73,8 @@ async function runJobCheck() {
     await storage.setStatus(`Error: ${errorMessage}`);
   }
   // Notify popup to update
-  browser.runtime.sendMessage({ action: 'updatePopup' });
+  //browser.runtime.sendMessage({ action: 'updatePopup' });
+  await notifyPopup(); // Notify popup we're done
 }
 
 // --- Event Listeners ---

@@ -1,8 +1,7 @@
 export const config = {
   // --- API & Auth ---
   DEFAULT_QUERY: 'NOT "react" NOT "next.js" NOT "wix" NOT "HubSpot" NOT "Squarespace" NOT "Webflow Website" NOT "Webflow Page" NOT "Webflow Designer" NOT "Content Marketing" NOT "Guest Post" "CLS" OR "INP" OR "LCP" OR "pagespeed" OR "Page speed" OR "Shopify speed" OR "Wordpress speed" OR "site speed" OR "web vitals" OR "WebPageTest" OR "GTmetrix" OR "Lighthouse scores" OR "Google Lighthouse" OR "page load" OR "performance expert" OR "performance specialist" OR "performance audit"',
-  GQL_ENDPOINT: 'https://www.upwork.com/api/graphql/v1?alias=userJobSearch',
-  GQL_DETAILS_ENDPOINT: 'https://www.upwork.com/api/graphql/v1?alias=gql-query-get-auth-job-details',
+  GQL_ENDPOINT_BASE: 'https://www.upwork.com/api/graphql/v1',
 
   // --- Background Script ---
   ALARM_NAME: 'upwork-job-check',
@@ -39,7 +38,6 @@ export const config = {
     'Unity Performance Specialist',
     'Specialist for TikTok',
     'Spanish Fluent',
-    // Add more strings to exclude as needed
   ].map(s => s.toLowerCase()),
   COUNTRY_LOW_PRIORITY: [
     'India',
@@ -49,7 +47,6 @@ export const config = {
     'Philippines',
     'Lebanon',
     'Nigeria',
-    // 'IND' is sometimes returned by the API instead of 'India'
     'IND',
   ].map(s => s.toLowerCase()),
 };
