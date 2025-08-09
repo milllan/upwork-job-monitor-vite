@@ -1,13 +1,14 @@
 import browser from 'webextension-polyfill';
 import type { Job } from './types';
 
-// Centralize storage keys to avoid typos
 export const STORAGE_KEYS = {
   SEEN_JOBS: 'seenJobs',
+  DELETED_JOBS: 'deletedJobs', // New
   USER_QUERY: 'userQuery',
   RECENT_JOBS: 'recentJobs',
   MONITOR_STATUS: 'monitorStatus',
   LAST_CHECK: 'lastCheck',
+  THEME: 'theme', // New
 };
 
 // Generic getter/setter for simplicity
@@ -25,6 +26,9 @@ export const storage = {
   getSeenJobs: () => getItem<string[]>(STORAGE_KEYS.SEEN_JOBS, []),
   setSeenJobs: (ids: string[]) => setItem(STORAGE_KEYS.SEEN_JOBS, ids),
 
+  getDeletedJobs: () => getItem<string[]>(STORAGE_KEYS.DELETED_JOBS, []), // New
+  setDeletedJobs: (ids: string[]) => setItem(STORAGE_KEYS.DELETED_JOBS, ids), // New
+
   getUserQuery: () => getItem<string>(STORAGE_KEYS.USER_QUERY, ''),
   setUserQuery: (query: string) => setItem(STORAGE_KEYS.USER_QUERY, query),
 
@@ -36,4 +40,7 @@ export const storage = {
 
   getLastCheck: () => getItem<number | null>(STORAGE_KEYS.LAST_CHECK, null),
   setLastCheck: (timestamp: number) => setItem(STORAGE_KEYS.LAST_CHECK, timestamp),
+
+  getTheme: () => getItem<'light' | 'dark'>(STORAGE_KEYS.THEME, 'light'), // New
+  setTheme: (theme: 'light' | 'dark') => setItem(STORAGE_KEYS.THEME, theme), // New
 };

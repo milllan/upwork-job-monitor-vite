@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <title>Upwork Monitor</title>
-    <link rel="stylesheet" href="./popup.css" />
+    <link id="theme-stylesheet" rel="stylesheet" href="./popup.css" />
+    <script type="module" src="./theme-loader.ts"></script> <!-- FOUC preventer -->
   </head>
   <body>
     <header class="header">
@@ -14,20 +15,32 @@
       <div class="actions">
         <input type="text" id="query-input" placeholder="Enter search query..." />
         <button id="manual-check-btn" title="Save & Check Now">🚀</button>
+        <button id="theme-toggle-btn" title="Toggle Theme">🌙</button>
       </div>
     </header>
-    <main id="job-list" class="job-list-container"></main>
+
+    <main class="main-container">
+      <div id="job-list-container" class="job-list-container">
+        <!-- Jobs will be injected here -->
+      </div>
+      <div id="details-panel" class="details-panel">
+        <p class="details-panel--placeholder">Hover over a job to see details.</p>
+      </div>
+    </main>
 
     <!-- Template for a single job item -->
     <template id="job-item-template">
-      <div class="job-item">
-        <a class="job-item__title" target="_blank"></a>
-        <div class="job-item__meta">
-          <span class="job-item__budget"></span>
-          <span class="job-item__posted-on"></span>
+      <div class="job-item" tabindex="0">
+        <div class="job-item__header">
+          <a class="job-item__title" target="_blank"></a>
+          <button class="job-item__delete-btn" title="Hide Job">×</button>
         </div>
-        <div class="job-item__client"></div>
-        <div class="job-item__skills"></div>
+        <div class="job-item__meta">
+          <span data-field="budget"></span>
+          <span data-field="postedOn"></span>
+        </div>
+        <div class="job-item__client" data-field="client"></div>
+        <div class="job-item__skills" data-field="skills"></div>
       </div>
     </template>
 

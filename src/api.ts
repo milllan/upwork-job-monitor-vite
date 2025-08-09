@@ -1,13 +1,11 @@
 import browser from 'webextension-polyfill';
-import type { Job } from './types';
-
-// Constants
-const GQL_ENDPOINT = 'https://www.upwork.com/api/graphql/v1?alias=userJobSearch';
-const DEFAULT_QUERY = 'NOT "react" NOT "next.js" "CLS" OR "INP" OR "LCP" OR "pagespeed"';
+import type { Job, JobDetails } from './types';
+import { config } from './config'; // Import the new config
 
 // Find the OAuth2 token from cookies
 async function getAuthToken(): Promise<string | null> {
   const cookies = await browser.cookies.getAll({ domain: 'upwork.com' });
+  // This heuristic is good, but might need to be expanded if tokens change
   const oauthCookie = cookies.find(c => c.name.endsWith('sb') && c.value.startsWith('oauth2v2_'));
   return oauthCookie ? oauthCookie.value : null;
 }
@@ -20,11 +18,14 @@ const buildGqlQuery = (userQuery: string) => ({
         universalSearchNuxt {
           userJobSearchV1(request: $requestVariables) {
             results {
-              id
-              title
-              jobTile { job { ciphertext: cipherText publishTime } }
-              upworkHistoryData { client { country totalSpent { amount } totalFeedback } }
-              ontologySkills { prettyName: prefLabel }
+            id
+            title
+            description
+            relevanceEncoded
+            applied
+            ontologySkills { uid prefLabel prettyName: prefLabel }
+            jobTile { job { id ciphertext: cipherText publishTime createTime jobType hourlyBudgetMin hourlyBudgetMax fixedPriceAmount { amount isoCurrencyCode } } }
+            upworkHistoryData { client { paymentVerificationStatus country totalSpent { amount } totalFeedback } }
             }
           }
         }
@@ -32,10 +33,10 @@ const buildGqlQuery = (userQuery: string) => ({
     }`,
   variables: {
     requestVariables: {
-      userQuery: userQuery || DEFAULT_QUERY,
+      userQuery: userQuery || config.DEFAULT_QUERY,
       contractorTier: ['IntermediateLevel', 'ExpertLevel'],
       sort: 'recency',
-      paging: { offset: 0, count: 20 },
+      paging: { offset: 0, count: 10 },
     },
   },
 });
@@ -47,7 +48,7 @@ export async function fetchJobs(userQuery: string): Promise<Job[]> {
     throw new Error('Authentication token not found. Please log in to Upwork.');
   }
 
-  const response = await fetch(GQL_ENDPOINT, {
+  const response = await fetch(config.GQL_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -84,4 +85,41 @@ export async function fetchJobs(userQuery: string): Promise<Job[]> {
       skills: rawJob.ontologySkills?.map((s: any) => s.prettyName) || [],
     };
   });
+}
+
+const buildDetailsGqlQuery = (jobId: string) => ({
+    query: `
+      query JobAuthDetailsQuery($id: ID!) {
+        jobAuthDetails(id: $id) {
+          opening { job { description } }
+          buyer { info { stats { feedbackCount totalJobsWithHires } } }
+        }
+      }`,
+    variables: { id: jobId, isLoggedIn: true },
+});
+
+export async function fetchJobDetails(job: Job): Promise<JobDetails> {
+  const token = await getAuthToken();
+  if (!token) throw new Error('Authentication token not found.');
+
+  const response = await fetch(config.GQL_DETAILS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(buildDetailsGqlQuery(job.id)),
+  });
+
+  if (!response.ok) throw new Error(`API request for details failed: ${response.status}`);
+
+  const rawData = await response.json();
+  const details = rawData.data?.jobAuthDetails;
+
+  return {
+    ...job, // Start with the summary data
+    description: details?.opening?.job?.description || 'No description available.',
+    clientFeedbackCount: details?.buyer?.info?.stats?.feedbackCount || 0,
+    clientTotalHires: details?.buyer?.info?.stats?.totalJobsWithHires || 0,
+  };
 }

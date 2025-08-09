@@ -1,76 +1,139 @@
 import browser from 'webextension-polyfill';
 import { storage } from '../storage';
-import { Job } from '../types';
+import { Job, JobDetails } from '../types';
 
 // DOM Elements
 const statusTextEl = document.getElementById('status-text')!;
 const lastCheckTextEl = document.getElementById('last-check-text')!;
 const queryInputEl = document.getElementById('query-input') as HTMLInputElement;
 const manualCheckBtn = document.getElementById('manual-check-btn')!;
-const jobListEl = document.getElementById('job-list')!;
+const themeToggleBtn = document.getElementById('theme-toggle-btn')!;
+const jobListContainerEl = document.getElementById('job-list-container')!;
+const detailsPanelEl = document.getElementById('details-panel')!;
 const jobTemplate = document.getElementById('job-item-template') as HTMLTemplateElement;
 
-function timeAgo(date: number | null): string {
+// App State (simple object, no classes)
+let state = {
+  jobs: [] as Job[],
+  deletedJobs: [] as string[],
+  selectedJobId: null as string | null,
+};
+
+function timeAgo(dateStr: string): string {
+  const date = new Date(dateStr).getTime();
   if (!date) return 'N/A';
   const seconds = Math.floor((new Date().getTime() - date) / 1000);
-  let interval = seconds / 31536000;
-  if (interval > 1) return Math.floor(interval) + ' years ago';
-  interval = seconds / 2592000;
-  if (interval > 1) return Math.floor(interval) + ' months ago';
-  interval = seconds / 86400;
-  if (interval > 1) return Math.floor(interval) + ' days ago';
-  interval = seconds / 3600;
-  if (interval > 1) return Math.floor(interval) + ' hours ago';
-  interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + ' minutes ago';
-  return 'Just now';
+  let interval = Math.floor(seconds / 60);
+  if (interval < 60) return `${interval}m ago`;
+  interval = Math.floor(interval / 60);
+  if (interval < 24) return `${interval}h ago`;
+  interval = Math.floor(interval / 24);
+  return `${interval}d ago`;
 }
 
-function renderJobs(jobs: Job[]) {
-  jobListEl.innerHTML = '';
-  if (jobs.length === 0) {
-    jobListEl.textContent = 'No recent jobs found.';
+function renderJobs() {
+  jobListContainerEl.innerHTML = '';
+  const visibleJobs = state.jobs.filter(job => !state.deletedJobs.includes(job.id));
+  
+  if (visibleJobs.length === 0) {
+    jobListContainerEl.textContent = 'No recent jobs found.';
     return;
   }
 
   const fragment = document.createDocumentFragment();
-  for (const job of jobs) {
+  for (const job of visibleJobs) {
     const jobEl = jobTemplate.content.cloneNode(true) as HTMLElement;
     const container = jobEl.querySelector('.job-item')!;
     
+    container.dataset.jobId = job.id;
     container.classList.toggle('job-item--low-priority', job.isLowPriority);
     container.classList.toggle('job-item--excluded', job.isExcluded);
+    container.classList.toggle('selected', job.id === state.selectedJobId);
 
-    (jobEl.querySelector('.job-item__title') as HTMLAnchorElement).href = job.url;
-    (jobEl.querySelector('.job-item__title') as HTMLAnchorElement).textContent = job.title;
-    jobEl.querySelector('.job-item__budget')!.textContent = job.budget;
-    jobEl.querySelector('.job-item__posted-on')!.textContent = timeAgo(new Date(job.postedOn).getTime());
-    jobEl.querySelector('.job-item__client')!.textContent = `Client: ${job.clientCountry} | Rating: ${job.clientRating || 'N/A'} | Spent: $${job.clientTotalSpent.toLocaleString()}`;
-    jobEl.querySelector('.job-item__skills')!.textContent = `Skills: ${job.skills.join(', ')}`;
-
-    fragment.appendChild(jobEl);
+    (container.querySelector('.job-item__title') as HTMLAnchorElement).href = job.url;
+    (container.querySelector('.job-item__title') as HTMLAnchorElement).textContent = job.title;
+    container.querySelector('[data-field="budget"]')!.textContent = job.budget;
+    container.querySelector('[data-field="postedOn"]')!.textContent = timeAgo(job.postedOn);
+    container.querySelector('[data-field="client"]')!.textContent = `Client: ${job.clientCountry} | Rating: ${job.clientRating || 'N/A'} | Spent: $${job.clientTotalSpent.toLocaleString()}`;
+    container.querySelector('[data-field="skills"]')!.textContent = `Skills: ${job.skills.slice(0, 5).join(', ')}`;
+    
+    fragment.appendChild(container);
   }
-  jobListEl.appendChild(fragment);
+  jobListContainerEl.appendChild(fragment);
+}
+
+function renderDetails(details: JobDetails) {
+    detailsPanelEl.innerHTML = `
+        <h3>${details.title}</h3>
+        <p><strong>Budget:</strong> ${details.budget}</p>
+        <p><strong>Client:</strong> ${details.clientCountry} | <strong>Rating:</strong> ${details.clientRating || 'N/A'} (${details.clientFeedbackCount} reviews) | <strong>Hires:</strong> ${details.clientTotalHires}</p>
+        <hr>
+        <p>${details.description.replace(/\n/g, '<br>')}</p>
+    `;
 }
 
 async function updateUI() {
-  const [status, lastCheck, query, jobs] = await Promise.all([
+  const [status, lastCheck, query, jobs, deletedJobs] = await Promise.all([
     storage.getStatus(),
     storage.getLastCheck(),
     storage.getUserQuery(),
-    storage.getRecentJobs()
+    storage.getRecentJobs(),
+    storage.getDeletedJobs(),
   ]);
   
   statusTextEl.textContent = status;
-  lastCheckTextEl.textContent = timeAgo(lastCheck);
+  lastCheckTextEl.textContent = timeAgo(new Date(lastCheck!).toISOString());
   queryInputEl.value = query;
-  renderJobs(jobs);
+  
+  state.jobs = jobs;
+  state.deletedJobs = deletedJobs;
+  renderJobs();
 }
 
-// Event Listeners
+// --- Event Handlers ---
 manualCheckBtn.addEventListener('click', async () => {
   await storage.setUserQuery(queryInputEl.value);
   browser.runtime.sendMessage({ action: 'manualCheck' });
+});
+
+themeToggleBtn.addEventListener('click', async () => {
+    const currentTheme = await storage.getTheme();
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    await storage.setTheme(newTheme);
+    (document.getElementById('theme-stylesheet') as HTMLLinkElement).href = `./popup-${newTheme}.css`;
+});
+
+jobListContainerEl.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement;
+    const jobItem = target.closest<HTMLElement>('.job-item');
+    if (!jobItem) return;
+
+    if (target.matches('.job-item__delete-btn')) {
+        const jobId = jobItem.dataset.jobId!;
+        state.deletedJobs.push(jobId);
+        await storage.setDeletedJobs(state.deletedJobs);
+        jobItem.remove(); // Optimistic UI update
+    }
+});
+
+jobListContainerEl.addEventListener('mouseover', async (e) => {
+  const jobItem = (e.target as HTMLElement).closest<HTMLElement>('.job-item');
+  if (jobItem && jobItem.dataset.jobId !== state.selectedJobId) {
+    state.selectedJobId = jobItem.dataset.jobId!;
+    renderJobs(); // Re-render to show selection
+    
+    const jobData = state.jobs.find(j => j.id === state.selectedJobId);
+    if (jobData) {
+        detailsPanelEl.innerHTML = '<p>Loading details...</p>';
+        try {
+            const res = await browser.runtime.sendMessage({ action: 'getJobDetails', job: jobData });
+            if (res.error) throw new Error(res.error);
+            renderDetails(res.details);
+        } catch (error) {
+            detailsPanelEl.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    }
+  }
 });
 
 browser.runtime.onMessage.addListener(request => {
@@ -79,5 +142,4 @@ browser.runtime.onMessage.addListener(request => {
   }
 });
 
-// Initial Load
 updateUI();

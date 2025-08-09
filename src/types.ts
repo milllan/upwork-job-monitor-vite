@@ -8,7 +8,12 @@ export interface Job {
   clientRating: number | null;
   clientTotalSpent: number;
   skills: string[];
-  // Flags for UI rendering
   isLowPriority?: boolean;
   isExcluded?: boolean;
+}
+
+export interface JobDetails extends Job {
+  description: string;
+  clientFeedbackCount: number;
+  clientTotalHires: number;
 }

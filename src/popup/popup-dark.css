@@ -1,0 +1,13 @@
+:root {
+  --bg-color: #181a1b;
+  --panel-bg: #202324;
+  --text-color: #e8e6e3;
+  --text-muted: #9e9e9e;
+  --border-color: #3c4043;
+  --accent-color: #32a333;
+  --accent-text: #ffffff;
+  --link-color: #8ab4f8;
+  --hover-bg: #2f3334;
+  --low-priority-bg: #2a2d2e;
+  --excluded-bg: #252829;
+}
