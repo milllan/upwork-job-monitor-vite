@@ -1,0 +1,33 @@
+{
+  "name": "lean-upwork-monitor",
+  "private": true,
+  "version": "2025.08.09.0811",
+  "type": "module",
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:firefox build:chrome:watch",
+    "dev:firefox": "vite build --watch --mode firefox & web-ext run --source-dir dist/firefox --start-url 'https://www.upwork.com/nx/find-work/'",
+    "dev:chrome": "vite build --watch --mode chrome",
+    "build:chrome": "vite build --mode chrome && node scripts/zip.mjs chrome",
+    "build:firefox": "vite build --mode firefox && node scripts/zip.mjs firefox"
+  },
+  "author": "Milan Petrović",
+  "homepage": "https://github.com/milllan/upwork-job-monitor-vite",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/milllan/upwork-job-monitor-vite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/milllan/upwork-job-monitor-vite/issues"
+  },
+  "devDependencies": {
+    "chrome-launcher": "^1.2.0",
+    "cross-env": "^10.0.0",
+    "archiver": "^7.0.1",
+    "typescript": "^5.4.5",
+    "vite": "^7.1.1",
+    "vite-plugin-web-extension": "^4.4.5",
+    "web-ext": "^8.9.0",
+    "webextension-polyfill": "^0.12.0",
+    "ws": "^8.18.3"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "TS Extension",
+  "version": "1.0",
+  "description": "Cross-browser extension built with Vite + TypeScript",
+  "action": {
+    "default_popup": "popup/index.html"
+  },
+  "permissions": []
+}
