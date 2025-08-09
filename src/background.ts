@@ -1,16 +1,16 @@
 import browser from 'webextension-polyfill';
 import { storage } from './storage';
-import { fetchJobs, fetchJobDetails } from './api';
-import { Job } from './types';
+import { fetchJobs } from './api';
+import { Job, JobDetails } from './types';
 import { config } from './config';
 
-// --- Helper to safely send a message to the popup ---
+// Helper to safely send a message to the popup, ignoring errors if it's closed
 async function notifyPopup() {
     try {
         await browser.runtime.sendMessage({ action: 'updatePopup' });
     } catch (error) {
-        // This error is expected if the popup is not open. We can safely ignore it.
-        // console.log("Could not send message to popup, probably closed.");
+        // Expected error if the popup is not open.
+        console.log("Could not send message to popup, probably closed.");
     }
 }
 
@@ -28,11 +28,10 @@ function applyFilters(jobs: Job[]): Job[] {
 
 // --- Core Job Check Logic ---
 async function runJobCheck() {
-  console.log('Running job check...');
+  console.log('--- Running Job Check ---');
   await storage.setStatus('Checking...');
+  await notifyPopup();
   
-  //browser.runtime.sendMessage({ action: 'updatePopup' }); // Notify popup we've started
-  await notifyPopup(); // Notify popup we've started
   try {
     const [userQuery, seenJobs, deletedJobs] = await Promise.all([
         storage.getUserQuery(),
@@ -42,10 +41,12 @@ async function runJobCheck() {
 
     const fetchedJobs = await fetchJobs(userQuery);
     const filteredJobs = applyFilters(fetchedJobs);
-
+    
     const newJobs = filteredJobs.filter(job => 
-        !seenJobs.includes(job.id) && !deletedJobs.includes(job.id) // Respect deleted jobs
+        job.id && !seenJobs.includes(job.id) && !deletedJobs.includes(job.id)
     );
+
+    console.log(`Fetched: ${fetchedJobs.length}, New: ${newJobs.length}`);
 
     if (newJobs.length > 0) {
       const notifiableJobs = newJobs.filter(j => !j.isExcluded && !j.isLowPriority);
@@ -59,11 +60,12 @@ async function runJobCheck() {
         // await playNotificationSound(); // Uncomment if you have the offscreen document setup
       }
       
-      const newSeenJobs = [...seenJobs, ...newJobs.map(j => j.id)].slice(-MAX_SEEN_JOBS);
+      const newSeenJobs = [...seenJobs, ...newJobs.map(j => j.id)].slice(-config.MAX_SEEN_JOBS);
       await storage.setSeenJobs(newSeenJobs);
     }
     
-    await storage.setRecentJobs(filteredJobs.filter(j => !deletedJobs.includes(j.id)).slice(0, 20));
+    const jobsForPopup = filteredJobs.filter(j => j.id && !deletedJobs.includes(j.id)).slice(0, 20);
+    await storage.setRecentJobs(jobsForPopup);
     await storage.setStatus(`Checked. New: ${newJobs.length}`);
     await storage.setLastCheck(Date.now());
     
@@ -72,16 +74,17 @@ async function runJobCheck() {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     await storage.setStatus(`Error: ${errorMessage}`);
   }
+  
   // Notify popup to update
-  //browser.runtime.sendMessage({ action: 'updatePopup' });
-  await notifyPopup(); // Notify popup we're done
+  await notifyPopup();
 }
 
 // --- Event Listeners ---
-browser.runtime.onInstalled.addListener(async () => {
-  await storage.setUserQuery(config.DEFAULT_QUERY); 
+browser.runtime.onInstalled.addListener(() => {
+  console.log('Extension Installed/Updated.');
+  storage.setUserQuery(config.DEFAULT_QUERY); 
   browser.alarms.create(config.ALARM_NAME, {
-    delayInMinutes: 1,
+    delayInMinutes: 0.1, // Check quickly on first install
     periodInMinutes: config.FETCH_INTERVAL_MINUTES,
   });
   runJobCheck();
@@ -96,10 +99,7 @@ browser.alarms.onAlarm.addListener(alarm => {
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'manualCheck') {
     runJobCheck();
-  } else if (request.action === 'getJobDetails') {
-    fetchJobDetails(request.job)
-      .then(details => sendResponse({ details }))
-      .catch(error => sendResponse({ error: error instanceof Error ? error.message : String(error) }));
-    return true; // Indicates async response
-  }
+  } 
+  // Details fetching is now handled by the popup directly to simplify logic
+  return false; 
 });
