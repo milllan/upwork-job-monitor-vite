@@ -2,10 +2,35 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Popup</title>
+    <title>Upwork Monitor</title>
+    <link rel="stylesheet" href="./popup.css" />
   </head>
   <body>
-    <h1>Popup</h1>
+    <header class="header">
+      <div class="status-bar">
+        <span>Status: <b id="status-text">...</b></span>
+        <span>Last Check: <b id="last-check-text">...</b></span>
+      </div>
+      <div class="actions">
+        <input type="text" id="query-input" placeholder="Enter search query..." />
+        <button id="manual-check-btn" title="Save & Check Now">🚀</button>
+      </div>
+    </header>
+    <main id="job-list" class="job-list-container"></main>
+
+    <!-- Template for a single job item -->
+    <template id="job-item-template">
+      <div class="job-item">
+        <a class="job-item__title" target="_blank"></a>
+        <div class="job-item__meta">
+          <span class="job-item__budget"></span>
+          <span class="job-item__posted-on"></span>
+        </div>
+        <div class="job-item__client"></div>
+        <div class="job-item__skills"></div>
+      </div>
+    </template>
+
     <script type="module" src="./popup.ts"></script>
   </body>
 </html>
