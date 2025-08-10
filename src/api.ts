@@ -106,9 +106,14 @@ async function fetchWithTokenRotation(
         continue; // Try the next token
       }
       if (response.status === 429) {
-        // Too many requests – back off and try next token
+        const retryAfter = response.headers.get("Retry-After");
+        const delayMs = retryAfter
+          ? Number.isFinite(Number(retryAfter))
+            ? Number(retryAfter) * 1000
+            : 1000
+          : 500 + Math.random() * 1000;
         lastError = new Error("Rate limited by API (429). Backing off.");
-        await new Promise((r) => setTimeout(r, 500 + Math.random() * 1000));
+        await new Promise((r) => setTimeout(r, delayMs));
         continue;
       }
       if (!response.ok) {
