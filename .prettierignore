@@ -1,0 +1,18 @@
+# .prettierignore
+
+# Build output
+dist
+dist-chrome
+dist-firefox
+
+# Dependencies
+node_modules
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Other
+.DS_Store
+*.pem

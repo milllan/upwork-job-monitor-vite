@@ -1,35 +1,40 @@
 {
-  "name": "lean-upwork-monitor",
-  "private": true,
-  "version": "25.8.9",
-  "type": "module",
-  "scripts": {
-    "watch:firefox": "vite build --watch --mode firefox",
-    "start:zen": "web-ext run --source-dir dist/firefox --firefox \"C:/Program Files/Zen Browser/zen.exe\" --firefox-profile \"C:/Users/milll/AppData/Roaming/zen/Profiles/wkigpm3r.Default (alpha)\"",
-
-
-    "start:firefox": "web-ext run --arg=--start-debugger-server",
-
-    "watch:chrome": "vite build --watch --mode chrome",
-
-    "build:firefox": "vite build --mode firefox",
-    "build:chrome": "vite build --mode chrome"
-  },
-  "author": "Milan Petrović",
-  "homepage": "https://github.com/milllan/upwork-job-monitor-vite",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/milllan/upwork-job-monitor-vite.git"
-  },
-  "bugs": {
-    "url": "https://github.com/milllan/upwork-job-monitor-vite/issues"
-  },
-  "devDependencies": {
-    "archiver": "^7.0.1",
-    "typescript": "^5.4.5",
-    "vite": "^7.1.1",
-    "vite-plugin-web-extension": "^4.4.5",
-    "web-ext": "^8.2.0",
-    "webextension-polyfill": "^0.12.0"
-  }
+    "name": "lean-upwork-monitor",
+    "private": true,
+    "version": "25.8.9",
+    "type": "module",
+    "scripts": {
+        "watch:firefox": "vite build --watch --mode firefox",
+        "start:zen": "web-ext run --source-dir dist/firefox --firefox \"C:/Program Files/Zen Browser/zen.exe\" --firefox-profile \"C:/Users/milll/AppData/Roaming/zen/Profiles/wkigpm3r.Default (alpha)\"",
+        "start:firefox": "web-ext run --arg=--start-debugger-server",
+        "watch:chrome": "vite build --watch --mode chrome",
+        "build:firefox": "vite build --mode firefox",
+        "build:chrome": "vite build --mode chrome",
+        "format": "prettier --write \"src/**/*.{ts,js,json,html,css}\"",
+        "format:check": "prettier --check \"src/**/*.{ts,js,json,html,css}\"",
+        "prepare": "husky"
+    },
+    "author": "Milan Petrović",
+    "homepage": "https://github.com/milllan/upwork-job-monitor-vite",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/milllan/upwork-job-monitor-vite.git"
+    },
+    "bugs": {
+        "url": "https://github.com/milllan/upwork-job-monitor-vite/issues"
+    },
+    "devDependencies": {
+        "archiver": "^7.0.1",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.1.5",
+        "prettier": "^3.6.2",
+        "typescript": "^5.4.5",
+        "vite": "^7.1.1",
+        "vite-plugin-web-extension": "^4.4.5",
+        "web-ext": "^8.2.0",
+        "webextension-polyfill": "^0.12.0"
+    },
+    "lint-staged": {
+        "src/**/*.{ts,js,json,html,css}": "prettier --write"
+    }
 }

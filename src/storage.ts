@@ -44,7 +44,7 @@ export const storage = {
 
   getTheme: () => getItem<'light' | 'dark'>(STORAGE_KEYS.THEME, 'light'),
   setTheme: (theme: 'light' | 'dark') => setItem(STORAGE_KEYS.THEME, theme),
-  
+
   getLastGoodToken: () => getItem<string | null>(STORAGE_KEYS.LAST_GOOD_TOKEN, null),
   setLastGoodToken: (token: string | null) => setItem(STORAGE_KEYS.LAST_GOOD_TOKEN, token),
 };
