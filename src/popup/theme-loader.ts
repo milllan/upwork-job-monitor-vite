@@ -1,11 +1,13 @@
 import browser from 'webextension-polyfill';
 
+<<<<<<< HEAD
 document.addEventListener("DOMContentLoaded", async () => {
+=======
+(async () => {
+>>>>>>> a99addd (feat: Implement theme fixes)
   const { theme } = await browser.storage.local.get('theme');
   if (theme === 'dark') {
-    const stylesheet = document.getElementById('theme-stylesheet') as HTMLLinkElement | null;
-    if (stylesheet) {
-      stylesheet.href = './popup-dark.css';
-    }
+    // Set the attribute on the root element immediately
+    document.documentElement.setAttribute('data-theme', 'dark');
   }
-});
+})();
