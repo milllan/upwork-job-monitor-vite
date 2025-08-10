@@ -11,10 +11,24 @@
   --hover-bg: #f1f3f5;
   --selected-border: #0d6efd; /* Blue for selection */
   --warning-color: #ffc107; /* Yellow for unverified */
-
   --font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- Dark Theme Variable Overrides --- */
+/* These rules apply ONLY when the body has the data-theme="dark" attribute */
+:root[data-theme='dark'] {
+  --bg-color: #181a1b;
+  --panel-bg: #202324;
+  --text-color: #e8e6e3;
+  --text-muted: #9e9e9e;
+  --border-color: #3c4043;
+  --accent-color: #32a333;
+  --accent-text: #ffffff;
+  --link-color: #8ab4f8;
+  --hover-bg: #2f3334;
+  --selected-border: #8ab4f8;
+  --warning-color: #fdd835;
 }
 
 body {

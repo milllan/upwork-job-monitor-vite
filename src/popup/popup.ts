@@ -174,23 +174,29 @@ async function updateUI() {
   // Update local state and re-render
   state.jobs = jobs;
   state.deletedJobs = deletedJobs;
-  setAndApplyTheme(theme); // Ensure theme is correct
+  document.documentElement.dataset.theme = theme;
+  document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
   renderJobs();
 }
 
 /**
  * Applies a theme and saves it to storage.
  */
-async function setAndApplyTheme(theme: 'light' | 'dark') {
+async function applyTheme(theme: 'light' | 'dark') {
   await storage.setTheme(theme);
-  const stylesheet = document.getElementById('theme-stylesheet') as HTMLLinkElement;
-  stylesheet.href = theme === 'dark' ? './popup-dark.css' : './popup.css';
+  // This is the only line needed to change the theme!
+  document.documentElement.dataset.theme = theme;
   document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
 }
 
 // --- Event Handlers & Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
+  storage.getTheme().then((theme) => {
+    document.body.dataset.theme = theme;
+    document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
+  });
+
   const manualCheckBtn = document.getElementById('manual-check-btn')!;
   const themeToggleBtn = document.getElementById('theme-toggle-btn')!;
   const jobListContainerEl = document.getElementById('job-list-container')!;
@@ -204,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   themeToggleBtn.addEventListener('click', async () => {
     const currentTheme = await storage.getTheme();
-    await setAndApplyTheme(currentTheme === 'light' ? 'dark' : 'light');
+    await applyTheme(currentTheme === 'light' ? 'dark' : 'light');
   });
 
   // --- Event Delegation for Job List ---
