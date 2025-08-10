@@ -174,7 +174,8 @@ async function updateUI() {
   // Update local state and re-render
   state.jobs = jobs;
   state.deletedJobs = deletedJobs;
-  applyTheme(theme); // Ensure theme is correct
+  document.documentElement.dataset.theme = theme;
+  document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
   renderJobs();
 }
 
