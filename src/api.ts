@@ -48,6 +48,8 @@ async function fetchWithTokenRotation(
       `Trying sticky token ending in ...${lastGoodToken.slice(-6)} for alias: ${alias}`,
     );
     try {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(
         `${config.GQL_ENDPOINT_BASE}?alias=${alias}`,
         {
@@ -57,8 +59,10 @@ async function fetchWithTokenRotation(
             Authorization: `Bearer ${lastGoodToken}`,
           },
           body: JSON.stringify(gqlQuery),
+          signal: controller.signal,
         },
       );
+      clearTimeout(t);
 
       if (response.ok) {
         const data = await response.json();
@@ -89,6 +93,8 @@ async function fetchWithTokenRotation(
 
   for (const token of tokens) {
     try {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(
         `${config.GQL_ENDPOINT_BASE}?alias=${alias}`,
         {
@@ -98,8 +104,10 @@ async function fetchWithTokenRotation(
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(gqlQuery),
+          signal: controller.signal,
         },
       );
+      clearTimeout(t);
 
       if (response.status === 401) {
         lastError = new Error(`Token ...${token.slice(-6)} is unauthorized.`);

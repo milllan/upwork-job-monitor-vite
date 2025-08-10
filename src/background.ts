@@ -22,9 +22,7 @@ function applyFilters(jobs: Job[]): Job[] {
     job.isExcluded = config.TITLE_EXCLUSION.some((term) =>
       title.includes(term),
     );
-    job.isLowPriority = config.COUNTRY_LOW_PRIORITY.some((term) =>
-      country.includes(term),
-    );
+    job.isLowPriority = config.COUNTRY_LOW_PRIORITY.includes(country);
 
     // NEW: Add the reason for the tag
     if (job.isExcluded) {

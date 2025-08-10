@@ -56,6 +56,7 @@ function renderJobs() {
     (job) => !job.isExcluded && !state.deletedJobs.includes(job.id),
   );
 
+  console.log("Visible Jobs:", visibleJobs.length);
   if (visibleJobs.length === 0) {
     jobListContainerEl.innerHTML =
       '<p class="details-panel--placeholder">No recent jobs found.</p>';

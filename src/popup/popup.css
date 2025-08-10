@@ -154,6 +154,9 @@ hr {
   font-weight: bold;
   white-space: nowrap;
 }
+.job-item__priority-tag:empty {
+  display: none;
+}
 
 .job-item__title {
   font-weight: 500;
