@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 import type { Job, JobDetails } from './types';
 import { config } from './config';
+import { storage } from './storage';
 
 /**
  * ENHANCED: Retrieves and prioritizes all potential OAuth2 API tokens from cookies.
@@ -34,8 +35,40 @@ async function getAllPotentialApiTokens(): Promise<string[]> {
 /**
  * NEW: A generic GraphQL fetcher that handles token rotation.
  * All API calls will go through this function.
+ * Uses a "sticky token" strategy.
  */
 async function fetchWithTokenRotation(alias: string, gqlQuery: { query: string, variables: object }): Promise<any> {
+    
+    // --- Phase 1: Try the last known good token ---
+    const lastGoodToken = await storage.getLastGoodToken();
+    if (lastGoodToken) {
+        console.log(`Trying sticky token ending in ...${lastGoodToken.slice(-6)} for alias: ${alias}`);
+        try {
+            const response = await fetch(`${config.GQL_ENDPOINT_BASE}?alias=${alias}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${lastGoodToken}` },
+                body: JSON.stringify(gqlQuery),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (!data.errors) {
+                    console.log(`Sticky token ...${lastGoodToken.slice(-6)} worked!`);
+                    return data; // Success with sticky token
+                }
+            }
+            // If the request fails for any reason (401, GraphQL error, etc.), the token is bad.
+            console.warn(`Sticky token ...${lastGoodToken.slice(-6)} failed. Clearing and starting full rotation.`);
+            await storage.setLastGoodToken(null); // Invalidate the token
+
+        } catch (error) {
+            console.error(`Sticky token request failed:`, error);
+            await storage.setLastGoodToken(null); // Invalidate on network error too
+        }
+    }
+
+    // --- Phase 2: Perform full rotation if sticky token fails or doesn't exist ---
+    console.log('Starting full token rotation...');
     const tokens = await getAllPotentialApiTokens();
     if (tokens.length === 0) {
         throw new Error('Authentication token not found. Please log in to Upwork.');
@@ -44,45 +77,36 @@ async function fetchWithTokenRotation(alias: string, gqlQuery: { query: string, 
     let lastError: Error | null = null;
 
     for (const token of tokens) {
-        console.log(`Trying token ending in ...${token.slice(-6)} for alias: ${alias}`);
         try {
             const response = await fetch(`${config.GQL_ENDPOINT_BASE}?alias=${alias}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(gqlQuery),
             });
 
             if (response.status === 401) {
-                console.warn(`Token ...${token.slice(-6)} is unauthorized (401). Trying next.`);
-                lastError = new Error(`API request failed with status: ${response.status}`);
+                lastError = new Error(`Token ...${token.slice(-6)} is unauthorized.`);
                 continue; // Try the next token
             }
-            
             if (!response.ok) {
-                // For other errors (like 403, 500), we might want to stop and report it.
                 throw new Error(`API request failed with status: ${response.status}`);
             }
 
             const data = await response.json();
             if (data.errors) {
-                 console.warn(`GraphQL error with token ...${token.slice(-6)}:`, data.errors);
                  lastError = new Error('GraphQL error received from server.');
-                 continue; // Still might be a token issue, so try next
+                 continue;
             }
             
-            console.log(`Successfully fetched data with token ...${token.slice(-6)}`);
+            console.log(`Found new valid token ...${token.slice(-6)}. Saving as sticky token.`);
+            await storage.setLastGoodToken(token); // *** SAVE THE NEW GOOD TOKEN ***
             return data; // Success!
 
         } catch (error) {
-            console.error(`Request with token ...${token.slice(-6)} failed:`, error);
             lastError = error instanceof Error ? error : new Error('Unknown fetch error');
         }
     }
 
-    // If the loop finishes without a successful request
     throw lastError || new Error('All API tokens failed.');
 }
 
@@ -107,7 +131,7 @@ export async function fetchJobs(userQuery: string): Promise<Job[]> {
         userQuery: userQuery || config.DEFAULT_QUERY,
         contractorTier: ['IntermediateLevel', 'ExpertLevel'],
         sort: 'recency',
-        paging: { offset: 0, count: 20 },
+        paging: { offset: 0, count: 10 },
       },
     },
   };
@@ -132,7 +156,7 @@ export async function fetchJobs(userQuery: string): Promise<Job[]> {
   }));
 }
 
-export async function fetchJobDetails(jobId: string): Promise<Partial<JobDetails>> {
+export async function fetchJobDetails(job: Job): Promise<JobDetails> {
   const gqlQuery = {
     query: `
       query JobAuthDetailsQuery($id: ID!) {
@@ -141,13 +165,15 @@ export async function fetchJobDetails(jobId: string): Promise<Partial<JobDetails
           buyer { info { stats { feedbackCount totalJobsWithHires } } }
         }
       }`,
-    variables: { id: jobId, isLoggedIn: true },
+    variables: { id: job.id, isLoggedIn: true },
   };
 
   const rawData = await fetchWithTokenRotation('gql-query-get-auth-job-details', gqlQuery);
   const details = rawData.data?.jobAuthDetails;
   
+  // Merge the fetched details with the existing job data
   return {
+    ...job, // The original job summary
     description: details?.opening?.job?.description || 'No description available.',
     clientFeedbackCount: details?.buyer?.info?.stats?.feedbackCount || 0,
     clientTotalHires: details?.buyer?.info?.stats?.totalJobsWithHires || 0,

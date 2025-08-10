@@ -1,9 +1,11 @@
 import browser from 'webextension-polyfill';
 
-(async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const { theme } = await browser.storage.local.get('theme');
   if (theme === 'dark') {
-    const stylesheet = document.getElementById('theme-stylesheet') as HTMLLinkElement;
-    stylesheet.href = './popup-dark.css';
+    const stylesheet = document.getElementById('theme-stylesheet') as HTMLLinkElement | null;
+    if (stylesheet) {
+      stylesheet.href = './popup-dark.css';
+    }
   }
-})();
+});

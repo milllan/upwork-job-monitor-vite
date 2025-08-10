@@ -3,12 +3,13 @@ import type { Job } from './types';
 
 export const STORAGE_KEYS = {
   SEEN_JOBS: 'seenJobs',
-  DELETED_JOBS: 'deletedJobs', // New
+  DELETED_JOBS: 'deletedJobs',
   USER_QUERY: 'userQuery',
   RECENT_JOBS: 'recentJobs',
   MONITOR_STATUS: 'monitorStatus',
   LAST_CHECK: 'lastCheck',
-  THEME: 'theme', // New
+  THEME: 'theme',
+  LAST_GOOD_TOKEN: 'lastGoodToken',
 };
 
 // Generic getter/setter for simplicity
@@ -26,8 +27,8 @@ export const storage = {
   getSeenJobs: () => getItem<string[]>(STORAGE_KEYS.SEEN_JOBS, []),
   setSeenJobs: (ids: string[]) => setItem(STORAGE_KEYS.SEEN_JOBS, ids),
 
-  getDeletedJobs: () => getItem<string[]>(STORAGE_KEYS.DELETED_JOBS, []), // New
-  setDeletedJobs: (ids: string[]) => setItem(STORAGE_KEYS.DELETED_JOBS, ids), // New
+  getDeletedJobs: () => getItem<string[]>(STORAGE_KEYS.DELETED_JOBS, []),
+  setDeletedJobs: (ids: string[]) => setItem(STORAGE_KEYS.DELETED_JOBS, ids),
 
   getUserQuery: () => getItem<string>(STORAGE_KEYS.USER_QUERY, ''),
   setUserQuery: (query: string) => setItem(STORAGE_KEYS.USER_QUERY, query),
@@ -41,6 +42,9 @@ export const storage = {
   getLastCheck: () => getItem<number | null>(STORAGE_KEYS.LAST_CHECK, null),
   setLastCheck: (timestamp: number) => setItem(STORAGE_KEYS.LAST_CHECK, timestamp),
 
-  getTheme: () => getItem<'light' | 'dark'>(STORAGE_KEYS.THEME, 'light'), // New
-  setTheme: (theme: 'light' | 'dark') => setItem(STORAGE_KEYS.THEME, theme), // New
+  getTheme: () => getItem<'light' | 'dark'>(STORAGE_KEYS.THEME, 'light'),
+  setTheme: (theme: 'light' | 'dark') => setItem(STORAGE_KEYS.THEME, theme),
+  
+  getLastGoodToken: () => getItem<string | null>(STORAGE_KEYS.LAST_GOOD_TOKEN, null),
+  setLastGoodToken: (token: string | null) => setItem(STORAGE_KEYS.LAST_GOOD_TOKEN, token),
 };
