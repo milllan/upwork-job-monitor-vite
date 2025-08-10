@@ -1,0 +1,29 @@
+{
+  // --- Core Prettier Settings ---
+  // Force the Prettier extension to use the version from your node_modules
+  "prettier.prettierPath": "./node_modules/prettier",
+
+  // --- Editor Integration Settings ---
+  // Set Prettier as the default formatter for all relevant files
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // Automatically format files when you save them
+  "editor.formatOnSave": true,
+
+  // Optional: Explicitly enable format on save for specific languages
+  // This is usually not needed if the global formatOnSave is true, but can be helpful.
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

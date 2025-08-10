@@ -1,16 +1,16 @@
-import browser from "webextension-polyfill";
-import { storage } from "./storage";
-import { fetchJobs } from "./api";
-import { Job, JobDetails } from "./types";
-import { config } from "./config";
+import browser from 'webextension-polyfill';
+import { storage } from './storage';
+import { fetchJobs } from './api';
+import { Job, JobDetails } from './types';
+import { config } from './config';
 
 // Helper to safely send a message to the popup, ignoring errors if it's closed
 async function notifyPopup() {
   try {
-    await browser.runtime.sendMessage({ action: "updatePopup" });
+    await browser.runtime.sendMessage({ action: 'updatePopup' });
   } catch (error) {
     // Expected error if the popup is not open.
-    console.log("Could not send message to popup, probably closed.");
+    console.log('Could not send message to popup, probably closed.');
   }
 }
 
@@ -19,14 +19,12 @@ function applyFilters(jobs: Job[]): Job[] {
     const title = job.title.toLowerCase();
     const country = job.client.country.toLowerCase();
 
-    job.isExcluded = config.TITLE_EXCLUSION.some((term) =>
-      title.includes(term),
-    );
+    job.isExcluded = config.TITLE_EXCLUSION.some((term) => title.includes(term));
     job.isLowPriority = config.COUNTRY_LOW_PRIORITY.includes(country);
 
     // NEW: Add the reason for the tag
     if (job.isExcluded) {
-      job.priorityReason = "Filtered";
+      job.priorityReason = 'Filtered';
     } else if (job.isLowPriority) {
       job.priorityReason = job.client.country;
     }
@@ -37,8 +35,8 @@ function applyFilters(jobs: Job[]): Job[] {
 
 // --- Core Job Check Logic ---
 async function runJobCheck() {
-  console.log("--- Running Job Check ---");
-  await storage.setStatus("Checking...");
+  console.log('--- Running Job Check ---');
+  await storage.setStatus('Checking...');
   await notifyPopup();
 
   try {
@@ -52,29 +50,24 @@ async function runJobCheck() {
     const filteredJobs = applyFilters(fetchedJobs);
 
     const newJobs = filteredJobs.filter(
-      (job) =>
-        job.id && !seenJobs.includes(job.id) && !deletedJobs.includes(job.id),
+      (job) => job.id && !seenJobs.includes(job.id) && !deletedJobs.includes(job.id)
     );
 
     console.log(`Fetched: ${fetchedJobs.length}, New: ${newJobs.length}`);
 
     if (newJobs.length > 0) {
-      const notifiableJobs = newJobs.filter(
-        (j) => !j.isExcluded && !j.isLowPriority,
-      );
+      const notifiableJobs = newJobs.filter((j) => !j.isExcluded && !j.isLowPriority);
       if (notifiableJobs.length > 0) {
         browser.notifications.create({
-          type: "basic",
-          iconUrl: "icons/icon48.png",
+          type: 'basic',
+          iconUrl: 'icons/icon48.png',
           title: `Found ${notifiableJobs.length} new Upwork Job(s)!`,
           message: notifiableJobs[0].title,
         });
         // await playNotificationSound(); // Uncomment if you have the offscreen document setup
       }
 
-      const newSeenJobs = [...seenJobs, ...newJobs.map((j) => j.id)].slice(
-        -config.MAX_SEEN_JOBS,
-      );
+      const newSeenJobs = [...seenJobs, ...newJobs.map((j) => j.id)].slice(-config.MAX_SEEN_JOBS);
       await storage.setSeenJobs(newSeenJobs);
     }
 
@@ -85,9 +78,8 @@ async function runJobCheck() {
     await storage.setStatus(`Checked. New: ${newJobs.length}`);
     await storage.setLastCheck(Date.now());
   } catch (error) {
-    console.error("Job check failed:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    console.error('Job check failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     await storage.setStatus(`Error: ${errorMessage}`);
   }
 
@@ -97,7 +89,7 @@ async function runJobCheck() {
 
 // --- Event Listeners ---
 browser.runtime.onInstalled.addListener(() => {
-  console.log("Extension Installed/Updated.");
+  console.log('Extension Installed/Updated.');
   storage.setUserQuery(config.DEFAULT_QUERY);
   browser.alarms.create(config.ALARM_NAME, {
     delayInMinutes: 0.1, // Check quickly on first install
@@ -113,7 +105,7 @@ browser.alarms.onAlarm.addListener((alarm) => {
 });
 
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "manualCheck") {
+  if (request.action === 'manualCheck') {
     runJobCheck();
   }
   // Details fetching is now handled by the popup directly to simplify logic

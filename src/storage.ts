@@ -1,15 +1,15 @@
-import browser from "webextension-polyfill";
-import type { Job } from "./types";
+import browser from 'webextension-polyfill';
+import type { Job } from './types';
 
 export const STORAGE_KEYS = {
-  SEEN_JOBS: "seenJobs",
-  DELETED_JOBS: "deletedJobs",
-  USER_QUERY: "userQuery",
-  RECENT_JOBS: "recentJobs",
-  MONITOR_STATUS: "monitorStatus",
-  LAST_CHECK: "lastCheck",
-  THEME: "theme",
-  LAST_GOOD_TOKEN: "lastGoodToken",
+  SEEN_JOBS: 'seenJobs',
+  DELETED_JOBS: 'deletedJobs',
+  USER_QUERY: 'userQuery',
+  RECENT_JOBS: 'recentJobs',
+  MONITOR_STATUS: 'monitorStatus',
+  LAST_CHECK: 'lastCheck',
+  THEME: 'theme',
+  LAST_GOOD_TOKEN: 'lastGoodToken',
 };
 
 // Generic getter/setter for simplicity
@@ -30,25 +30,21 @@ export const storage = {
   getDeletedJobs: () => getItem<string[]>(STORAGE_KEYS.DELETED_JOBS, []),
   setDeletedJobs: (ids: string[]) => setItem(STORAGE_KEYS.DELETED_JOBS, ids),
 
-  getUserQuery: () => getItem<string>(STORAGE_KEYS.USER_QUERY, ""),
+  getUserQuery: () => getItem<string>(STORAGE_KEYS.USER_QUERY, ''),
   setUserQuery: (query: string) => setItem(STORAGE_KEYS.USER_QUERY, query),
 
   getRecentJobs: () => getItem<Job[]>(STORAGE_KEYS.RECENT_JOBS, []),
   setRecentJobs: (jobs: Job[]) => setItem(STORAGE_KEYS.RECENT_JOBS, jobs),
 
-  getStatus: () =>
-    getItem<string>(STORAGE_KEYS.MONITOR_STATUS, "Initializing..."),
+  getStatus: () => getItem<string>(STORAGE_KEYS.MONITOR_STATUS, 'Initializing...'),
   setStatus: (status: string) => setItem(STORAGE_KEYS.MONITOR_STATUS, status),
 
   getLastCheck: () => getItem<number | null>(STORAGE_KEYS.LAST_CHECK, null),
-  setLastCheck: (timestamp: number) =>
-    setItem(STORAGE_KEYS.LAST_CHECK, timestamp),
+  setLastCheck: (timestamp: number) => setItem(STORAGE_KEYS.LAST_CHECK, timestamp),
 
-  getTheme: () => getItem<"light" | "dark">(STORAGE_KEYS.THEME, "light"),
-  setTheme: (theme: "light" | "dark") => setItem(STORAGE_KEYS.THEME, theme),
+  getTheme: () => getItem<'light' | 'dark'>(STORAGE_KEYS.THEME, 'light'),
+  setTheme: (theme: 'light' | 'dark') => setItem(STORAGE_KEYS.THEME, theme),
 
-  getLastGoodToken: () =>
-    getItem<string | null>(STORAGE_KEYS.LAST_GOOD_TOKEN, null),
-  setLastGoodToken: (token: string | null) =>
-    setItem(STORAGE_KEYS.LAST_GOOD_TOKEN, token),
+  getLastGoodToken: () => getItem<string | null>(STORAGE_KEYS.LAST_GOOD_TOKEN, null),
+  setLastGoodToken: (token: string | null) => setItem(STORAGE_KEYS.LAST_GOOD_TOKEN, token),
 };
