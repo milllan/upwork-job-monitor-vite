@@ -183,14 +183,27 @@ async function updateUI() {
  */
 async function setAndApplyTheme(theme: 'light' | 'dark') {
   await storage.setTheme(theme);
-  const stylesheet = document.getElementById('theme-stylesheet') as HTMLLinkElement;
-  stylesheet.href = theme === 'dark' ? './popup-dark.css' : './popup.css';
+  // This is the only line needed to change the theme!
+  document.body.dataset.theme = theme;
   document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
 }
 
 // --- Event Handlers & Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Make sure to apply the theme to the body once it's available
+  // This handles the case where the theme-loader might have set it on <html>
+  storage.getTheme().then((theme) => {
+    document.body.dataset.theme = theme;
+    document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
+  });
+
+  document.getElementById('theme-toggle-btn')!.addEventListener('click', async () => {
+    const currentTheme = await storage.getTheme();
+    // No need to check the stylesheet href anymore
+    await applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+  });
+
   const manualCheckBtn = document.getElementById('manual-check-btn')!;
   const themeToggleBtn = document.getElementById('theme-toggle-btn')!;
   const jobListContainerEl = document.getElementById('job-list-container')!;
