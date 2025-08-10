@@ -161,8 +161,51 @@ export async function fetchJobDetails(job: Job): Promise<JobDetails> {
     query: `
       query JobAuthDetailsQuery($id: ID!) {
         jobAuthDetails(id: $id) {
-          opening { job { description } }
-          buyer { info { stats { feedbackCount totalJobsWithHires } } }
+          opening {
+            job {
+              description
+              clientActivity {
+                lastBuyerActivity
+                totalApplicants
+                totalHired
+                totalInvitedToInterview
+                numberOfPositionsToHire
+              }
+            }
+            questions {
+              question
+            }
+          }
+          buyer {
+            info {
+              stats {
+                totalAssignments
+                hoursCount
+                feedbackCount
+                score
+                totalCharges {
+                  amount
+                }
+              }
+            }
+            workHistory {
+              contractorInfo {
+                contractorName
+                ciphertext
+              }
+            }
+          }
+          applicantsBidsStats {
+            avgRateBid {
+              amount
+            }
+            minRateBid {
+              amount
+            }
+            maxRateBid {
+              amount
+            }
+          }
         }
       }`,
     variables: { id: job.id, isLoggedIn: true },
