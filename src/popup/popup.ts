@@ -184,7 +184,7 @@ async function updateUI() {
 async function applyTheme(theme: 'light' | 'dark') {
   await storage.setTheme(theme);
   // This is the only line needed to change the theme!
-  document.body.dataset.theme = theme;
+  document.documentElement.dataset.theme = theme;
   document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
 }
 
