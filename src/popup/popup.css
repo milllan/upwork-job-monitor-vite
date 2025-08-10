@@ -1,162 +1,297 @@
+/* --- 1. Global Styles & Variables (Light Theme) --- */
 :root {
-    --bg-color: #f8f9fa;
-    --panel-bg: #ffffff;
-    --text-color: #212529;
-    --text-muted: #6c757d;
-    --border-color: #dee2e6;
-    --accent-color: #14a800;
-    --accent-text: #ffffff;
-    --link-color: #0d6efd;
-    --hover-bg: #f1f3f5;
-    --low-priority-bg: #f1f3f5;
-    --excluded-bg: #e9ecef;
+  --bg-color: #f8f9fa;
+  --panel-bg: #ffffff;
+  --text-color: #212529;
+  --text-muted: #6c757d;
+  --border-color: #dee2e6;
+  --accent-color: #14a800; /* Upwork Green */
+  --accent-text: #ffffff;
+  --link-color: #0d6efd;
+  --hover-bg: #f1f3f5;
+  --selected-border: #0d6efd; /* Blue for selection */
+  --warning-color: #ffc107; /* Yellow for unverified */
+
+  --font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-        Helvetica, Arial, sans-serif;
-    width: 750px;
-    height: 500px;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    margin: 0;
-    display: flex;
-    flex-direction: column;
+  font-family: var(--font-family);
+  width: 750px;
+  height: 500px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
 }
 
-.header {
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-}
-.status-bar {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: var(--text-muted);
-}
-.actions {
-    display: flex;
-    gap: 8px;
-}
-#query-input {
-    padding: 6px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-}
 button {
-    background: var(--accent-color);
-    color: var(--accent-text);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-#theme-toggle-btn {
-    background-color: #e9ecef;
-    color: var(--text-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.15s ease;
 }
 
+hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 8px 0;
+}
+
+/* --- 2. Header & Actions --- */
+.header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.status-bar {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#query-input {
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: var(--font-family);
+}
+
+#manual-check-btn {
+  background: var(--accent-color);
+  color: var(--accent-text);
+  padding: 6px 12px;
+  font-size: 16px; /* For rocket emoji */
+}
+
+#theme-toggle-btn {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+  font-size: 16px; /* For moon emoji */
+  padding: 6px 10px;
+}
+
+/* --- 3. Main Layout --- */
 .main-container {
-    display: flex;
-    flex-grow: 1;
-    overflow: hidden;
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
 }
 
 .job-list-container {
-    width: 40%;
-    flex-shrink: 0;
-    overflow-y: auto;
-    border-right: 1px solid var(--border-color);
-    padding: 8px;
-}
-.details-panel {
-    flex-grow: 1;
-    padding: 12px;
-    overflow-y: auto;
-}
-.details-panel--placeholder {
-    color: var(--text-muted);
-    text-align: center;
-    margin-top: 20px;
+  width: 45%;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-color);
 }
 
+.details-panel {
+  flex-grow: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.details-panel--placeholder {
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 40px;
+  font-style: italic;
+}
+
+/* --- 4. Job Item Component --- */
 .job-item {
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    margin-bottom: 8px;
-    background-color: var(--panel-bg);
-    cursor: pointer;
-    transition: background-color 0.15s ease;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
 }
+
 .job-item:hover {
-    background-color: var(--hover-bg);
+  background-color: var(--hover-bg);
 }
+
 .job-item.selected {
-    border-left: 3px solid var(--accent-color);
-    padding-left: 8px;
-}
-.job-item--low-priority {
-    background-color: var(--low-priority-bg);
-}
-.job-item--excluded {
-    background-color: var(--excluded-bg);
-    opacity: 0.6;
+  background-color: var(--hover-bg);
+  border-left: 3px solid var(--selected-border);
+  padding-left: 7px;
 }
 
 .job-item__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
 }
-.job-item__delete-btn {
-    font-size: 16px;
-    padding: 0 5px;
-    background: none;
-    color: var(--text-muted);
+
+.job-item__title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
-.job-item__delete-btn:hover {
-    background-color: #f8d7da;
-    color: #842029;
+
+.job-item__priority-tag {
+  background-color: #f0f0f0;
+  color: #555;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .job-item__title {
-    display: block;
-    font-weight: bold;
-    color: var(--link-color);
-    text-decoration: none;
-    margin-bottom: 4px;
-    font-size: 14px;
-}
-.job-item__meta {
-    font-size: 12px;
-    color: var(--text-muted);
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 4px;
-}
-.job-item__client {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-}
-.job-item__skills {
-    font-size: 11px;
-    color: #888;
-    font-style: italic;
-    line-height: 1.4;
+  font-weight: 500;
+  color: var(--link-color);
+  text-decoration: none;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Scrollbar */
+.job-item__title:hover {
+  text-decoration: underline;
+}
+
+.job-item__delete-btn {
+  font-size: 18px;
+  padding: 0 5px;
+  line-height: 1;
+  background: none;
+  color: var(--text-muted);
+}
+.job-item__delete-btn:hover {
+  color: #dc3545; /* Red for delete */
+}
+
+.job-item__meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+}
+
+.job-item__client {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap; /* Allow wrapping if needed */
+  margin: 6px 0;
+}
+
+.job-item__skills {
+  font-size: 11px;
+  color: #888;
+  font-style: italic;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Job Item Modifiers & Visual Cues */
+.job-item--low-priority {
+  background-color: var(--hover-bg);
+}
+.job-item--low-priority .job-item__title {
+  font-weight: 400; /* De-emphasize title */
+}
+
+.job-item--excluded {
+  opacity: 0.6;
+}
+.job-item--excluded .job-item__title {
+  text-decoration: line-through;
+}
+
+.client-rating--positive,
+.client-spent--high {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+.client-unverified {
+  color: var(--warning-color);
+  font-weight: bold;
+}
+
+/* --- 5. Details Panel Component --- */
+.details-panel h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+.details-panel h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+.details-panel h3 a:hover {
+  text-decoration: underline;
+}
+
+.details-panel p {
+  margin: 4px 0;
+}
+
+.details-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.details-section h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.details-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  font-size: 13px;
+}
+
+.details-stat b {
+  display: block;
+  font-size: 16px;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+/* --- 6. Scrollbar Utility --- */
 ::-webkit-scrollbar {
-    width: 6px;
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 3px;
+  background: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
 }

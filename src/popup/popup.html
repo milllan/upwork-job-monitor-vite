@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <title>Upwork Monitor</title>
     <link id="theme-stylesheet" rel="stylesheet" href="./popup.css" />
-    <script type="module" src="./theme-loader.ts"></script> <!-- FOUC preventer -->
+    <script type="module" src="./theme-loader.ts"></script>
+    <!-- FOUC preventer -->
   </head>
   <body>
     <header class="header">
@@ -13,7 +14,11 @@
         <span>Last Check: <b id="last-check-text">...</b></span>
       </div>
       <div class="actions">
-        <input type="text" id="query-input" placeholder="Enter search query..." />
+        <input
+          type="text"
+          id="query-input"
+          placeholder="Enter search query..."
+        />
         <button id="manual-check-btn" title="Save & Check Now">🚀</button>
         <button id="theme-toggle-btn" title="Toggle Theme">🌙</button>
       </div>
@@ -24,7 +29,9 @@
         <!-- Jobs will be injected here -->
       </div>
       <div id="details-panel" class="details-panel">
-        <p class="details-panel--placeholder">Hover over a job to see details.</p>
+        <p class="details-panel--placeholder">
+          Hover over a job to see details.
+        </p>
       </div>
     </main>
 
@@ -32,14 +39,27 @@
     <template id="job-item-template">
       <div class="job-item" tabindex="0">
         <div class="job-item__header">
-          <a class="job-item__title" target="_blank"></a>
+          <!-- NEW: Container for title and tags -->
+          <div class="job-item__title-wrapper">
+            <span
+              class="job-item__priority-tag"
+              data-field="priority-tag"
+            ></span>
+            <a class="job-item__title" target="_blank"></a>
+          </div>
           <button class="job-item__delete-btn" title="Hide Job">×</button>
         </div>
         <div class="job-item__meta">
           <span data-field="budget"></span>
           <span data-field="postedOn"></span>
         </div>
-        <div class="job-item__client" data-field="client"></div>
+        <!-- UPDATED: More specific client data fields -->
+        <div class="job-item__client">
+          <span data-field="client-country"></span>
+          <span data-field="client-rating"></span>
+          <span data-field="client-spent"></span>
+          <span data-field="client-verified"></span>
+        </div>
         <div class="job-item__skills" data-field="skills"></div>
       </div>
     </template>
