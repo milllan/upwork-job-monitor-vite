@@ -248,7 +248,7 @@ export async function fetchJobDetails(job: Job): Promise<JobDetails> {
   );
   const details = rawData.data?.jobAuthDetails;
   const originalJob = (await storage.getRecentJobs()).find(
-    (j) => j.id === jobId,
+    (j) => j.id === job.id,
   );
   if (!originalJob) throw new Error("Original job not found for details");
 
