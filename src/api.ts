@@ -105,13 +105,22 @@ async function fetchWithTokenRotation(
         lastError = new Error(`Token ...${token.slice(-6)} is unauthorized.`);
         continue; // Try the next token
       }
+      if (response.status === 429) {
+        // Too many requests – back off and try next token
+        lastError = new Error("Rate limited by API (429). Backing off.");
+        await new Promise((r) => setTimeout(r, 500 + Math.random() * 1000));
+        continue;
+      }
       if (!response.ok) {
         throw new Error(`API request failed with status: ${response.status}`);
       }
 
       const data = await response.json();
       if (data.errors) {
-        lastError = new Error("GraphQL error received from server.");
+        const gqlMsg =
+          (Array.isArray(data.errors) && data.errors[0]?.message) ||
+          "GraphQL error received from server.";
+        lastError = new Error(gqlMsg);
         continue;
       }
 
@@ -137,10 +146,14 @@ export async function fetchJobs(userQuery: string): Promise<Job[]> {
       query UserJobSearch($req: UserJobSearchV1Request!) {
         search { universalSearchNuxt { userJobSearchV1(request: $req) {
           results {
-            id title description applied
-            jobTile { job { ciphertext: cipherText publishTime } }
-            upworkHistoryData { client { country totalSpent { amount } totalFeedback } }
-            ontologySkills { prettyName: prefLabel }
+            id
+            title
+            description
+            relevanceEncoded
+            applied
+            ontologySkills { uid prefLabel prettyName: prefLabel }
+            jobTile { job { id ciphertext: cipherText publishTime createTime jobType hourlyBudgetMin hourlyBudgetMax fixedPriceAmount { amount isoCurrencyCode } } }
+            upworkHistoryData { client { paymentVerificationStatus country totalSpent { amount } totalFeedback } }
           }
         }}}
       }`,
@@ -187,7 +200,7 @@ export async function fetchJobs(userQuery: string): Promise<Job[]> {
   );
 }
 
-export async function fetchJobDetails(job: Job): Promise<JobDetails> {
+export async function fetchJobDetails(jobId: string): Promise<JobDetails> {
   const gqlQuery = {
     query: `
       query JobAuthDetailsQuery($id: ID!) {
@@ -239,7 +252,7 @@ export async function fetchJobDetails(job: Job): Promise<JobDetails> {
           }
         }
       }`,
-    variables: { id: job.id, isLoggedIn: true },
+    variables: { id: jobId, isLoggedIn: true },
   };
 
   const rawData = await fetchWithTokenRotation(
@@ -248,7 +261,7 @@ export async function fetchJobDetails(job: Job): Promise<JobDetails> {
   );
   const details = rawData.data?.jobAuthDetails;
   const originalJob = (await storage.getRecentJobs()).find(
-    (j) => j.id === job.id,
+    (j) => j.id === jobId,
   );
   if (!originalJob) throw new Error("Original job not found for details");
 
