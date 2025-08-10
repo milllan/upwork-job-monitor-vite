@@ -16,9 +16,9 @@ let state = {
 /**
  * Converts an ISO date string to a relative time string (e.g., "5m ago").
  */
-function timeAgo(isoString: string | null): string {
-  if (!isoString) return "N/A";
-  const date = new Date(isoString);
+function timeAgo(value: string | number | null): string {
+  if (!value) return "N/A";
+  const date = new Date(value);
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   const minutes = Math.floor(seconds / 60);
   if (minutes < 1) return "Just now";
