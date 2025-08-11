@@ -174,8 +174,7 @@ async function updateUI() {
   // Update local state and re-render
   state.jobs = jobs;
   state.deletedJobs = deletedJobs;
-  document.documentElement.dataset.theme = theme;
-  document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
+  setDOMTheme(theme);
   renderJobs();
 }
 
@@ -184,7 +183,9 @@ async function updateUI() {
  */
 async function applyTheme(theme: 'light' | 'dark') {
   await storage.setTheme(theme);
-  // This is the only line needed to change the theme!
+  setDOMTheme(theme);
+}
+function setDOMTheme(theme: 'light' | 'dark') {
   document.documentElement.dataset.theme = theme;
   document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
 }
