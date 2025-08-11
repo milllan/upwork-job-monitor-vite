@@ -16,7 +16,7 @@
 }
 
 /* --- Dark Theme Variable Overrides --- */
-/* These rules apply ONLY when the body has the data-theme="dark" attribute */
+/* These rules apply ONLY when the root element (<html>) has the data-theme="dark" attribute */
 :root[data-theme='dark'] {
   --bg-color: #181a1b;
   --panel-bg: #202324;
