@@ -192,11 +192,6 @@ async function applyTheme(theme: 'light' | 'dark') {
 // --- Event Handlers & Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
-  storage.getTheme().then((theme) => {
-    document.body.dataset.theme = theme;
-    document.getElementById('theme-toggle-btn')!.textContent = theme === 'light' ? '🌙' : '☀️';
-  });
-
   const manualCheckBtn = document.getElementById('manual-check-btn')!;
   const themeToggleBtn = document.getElementById('theme-toggle-btn')!;
   const jobListContainerEl = document.getElementById('job-list-container')!;
